@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "Instagram.FollowUser": {
+      "commandName": "Project",
+      "commandLineArgs": "https://www.instagram.com/iamriccardoaldi/"
+    }
+  }
+}
