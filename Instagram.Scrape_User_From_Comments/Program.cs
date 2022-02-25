@@ -18,7 +18,7 @@ namespace Scrape_User_From_Comments
         static List<string> comments = new List<string>();
         private static string welcomeMessage = @"
 █ █▀▀   █▄▄ █▀█ ▀█▀   █▄▄ █▄█   █▄▄ █▀█ █▀▄ █▀█ █░█
-█ █▄█   █▄█ █▄█ ░█░   █▄█ ░█░   █▄█ █▀▄ █▄▀ ▀▀█ ▀▀█";
+█ █▄█   █▄█ █▄█ ░█░   █▄█ ░█░   █▄█ █▀▄ █▄▀ ▀▀█ ▀▀█ e BLT94";
 
 
         private static string InstagramURL = null;
@@ -147,7 +147,6 @@ namespace Scrape_User_From_Comments
 
                     foreach (var follower in followers)
                     {
-
                         MySqlCommand cmd = conn.CreateCommand();
                         cmd.CommandText = $"UPDATE ScrapedUsers SET Follow_Back = TRUE WHERE ID = '{follower}'";
 
