@@ -110,7 +110,7 @@ namespace Scrape_User_From_Comments
 
 
             PrintConsoleColored("\n\n-> Premere O per aprire tutti i commenti" +
-                $"\n-> Premere A per scraping dai commenti ^(ne hai acquisiti {comments.Count})£" +
+                $"\n-> Premere A per scraping dai commenti ^(da scaricare {comments.Count})£" +
                 $"\n-> Premere G per scraping dai followers" +
                 $"\n-> Premere D per dump su DB" +
                 $"\n-> Premere S per seguire gli utenti acquisiti ^(ne restano {tofollow})£ " +
