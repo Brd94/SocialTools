@@ -34,7 +34,7 @@ namespace Scrape_User_From_Comments
 
             IConfiguration config = new ConfigurationBuilder()
                 .AddJsonFile(configPath, optional: false, reloadOnChange: true)
-                .Build(); 
+                .Build();
 
             connectionString = config.GetSection("ConnectionStrings")["MySQL"];
             InstagramURL = config.GetSection("Instagram")["InstagramURL"];
@@ -63,12 +63,23 @@ namespace Scrape_User_From_Comments
 
                 while (true)
                 {
+                    try
+                    {
+                        PrintMenu();
 
-                    PrintMenu();
+                        var key = Console.ReadKey(false).Key;
 
-                    var key = Console.ReadKey(false).Key;
+                        ProcessCommand(key);
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine(ex.ToString());
+                        PrintConsoleColored("\n\n\n§ATTENZIONE ! Si è verificato un errore. " +
+                            "Premere un tasto per riprendere l'esecuzione del programma.£");
 
-                    ProcessCommand(key);
+                        Console.ReadKey(true);
+                    }
+
 
 
                 }
@@ -88,20 +99,59 @@ namespace Scrape_User_From_Comments
             Console.Clear();
             Console.WriteLine(welcomeMessage);
 
+            MySqlCommand cmd = conn.CreateCommand();
 
-            Console.WriteLine("\n\n-> Premere O per aprire tutti i commenti" +
-                "\n-> Premere A per scraping dai commenti" +
-                "\n-> Premere G per scraping dai followers" +
-                "\n-> Premere D per dump su DB" +
-                "\n-> Premere S per seguire gli user attualmente nel DB" +
-                "\n-> Premere L per aggiornare la lista dei follow-back" +
-                "\n-> Premere R per stampare la lista dei follow-back" +
-                "\n-> Premere U per non seguire più chi non ha fatto follow-back");
+            cmd.CommandText = $"SELECT COUNT(*) FROM ScrapedUsers WHERE Date_Followed IS NULL AND Is_Competitor = FALSE";
+            var tofollow = cmd.ExecuteScalar();
 
-            Console.WriteLine($"Sono presenti {comments.Count} utenti in memoria.");
+            cmd.CommandText = $"SELECT COUNT(*) FROM ScrapedUsers WHERE Date_Followed <  DATE_ADD(CURRENT_DATE(), INTERVAL -5 DAY) AND Date_Unfollowed IS NULL AND Follow_Back = FALSE";
+            var toUnfollow = cmd.ExecuteScalar();
+
+
+
+            PrintConsoleColored("\n\n-> Premere O per aprire tutti i commenti" +
+                $"\n-> Premere A per scraping dai commenti ^(ne hai acquisiti {comments.Count})£" +
+                $"\n-> Premere G per scraping dai followers" +
+                $"\n-> Premere D per dump su DB" +
+                $"\n-> Premere S per seguire gli utenti acquisiti ^(ne restano {tofollow})£ " +
+                $"\n-> Premere L per aggiornare la lista dei follow-back" +
+                $"\n-> Premere R per stampare la lista dei follow-back" +
+                $"\n-> Premere U per non seguire più chi non ha fatto follow-back ^(sono {toUnfollow})£");
+
+
+
 
             Console.Write("\n\n\nComando> ");
         }
+
+        private static void PrintConsoleColored(string message)
+        {
+            for (int i = 0; i < message.Length; i++)
+            {
+
+                switch (message[i])
+                {
+                    case '^':
+                        Console.ForegroundColor = ConsoleColor.Yellow;
+                        continue;
+
+                    case '§':
+                        Console.ForegroundColor = ConsoleColor.Red;
+                        continue;                   
+
+
+                    case '£':
+                        Console.ResetColor();
+                        continue;
+
+
+                }
+
+                Console.Write(message[i]);
+
+            }
+        }
+
 
         private static void ProcessCommand(ConsoleKey key)
         {
@@ -124,6 +174,7 @@ namespace Scrape_User_From_Comments
 
                 case ConsoleKey.D:
                     Dump_Comments_to_db(comments);
+                    comments.Clear();
                     Console.WriteLine("DUMP SU DB OK");
                     break;
 
@@ -138,6 +189,9 @@ namespace Scrape_User_From_Comments
                 case ConsoleKey.S:
                     FollowAllUsersInDB();
                     break;
+
+                case ConsoleKey.E:
+                    throw new Exception("Errore di test");
 
                 case ConsoleKey.L:
 
@@ -311,13 +365,13 @@ namespace Scrape_User_From_Comments
 
             foreach (var user in users)
             {
-                
+
 
                 FollowStatus retVal = UserFollower.GetFollowStatus(driver, user);
 
                 switch (retVal)
                 {
-                    case FollowStatus.Following: 
+                    case FollowStatus.Following:
 
                         UserFollower.UnfollowUser(driver, user);
 
@@ -420,7 +474,7 @@ namespace Scrape_User_From_Comments
             while (end > DateTime.Now)
             {
 
-                Console.Write($"\rSto attendendo altri {(int)(end - DateTime.Now).TotalSeconds} secondi. Se nel frattempo vuoi eseguire un'altra azione premi il tasto corrispondente.");
+                Console.Write($"\rSto attendendo {(int)(end - DateTime.Now).TotalSeconds} secondi. Premi un tasto per eseguire un'altra azione.");
 
                 if (Console.KeyAvailable)
                 {
