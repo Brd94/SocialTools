@@ -1,7 +1,8 @@
 {
   "profiles": {
     "Instagram.Scrape_User_From_Comments": {
-      "commandName": "Project"
+      "commandName": "Project",
+      "commandLineArgs": "https://www.instagram.com/francescaabelotti/"
     }
   }
 }

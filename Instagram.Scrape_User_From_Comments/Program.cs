@@ -168,6 +168,9 @@ namespace Scrape_User_From_Comments
 
                 case ConsoleKey.U:
                     UnfollowAllUsersInDB();
+
+                    Console.WriteLine("\nPremere un tasto per tornare al menu");
+                    Console.ReadKey();
                     break;
 
                 default:
@@ -241,7 +244,7 @@ namespace Scrape_User_From_Comments
                 while (true)
                 {
 
-                    Thread.Sleep(1000);
+                    Thread.Sleep(2000);
                     var elements = scroll_element.FindElements(By.CssSelector(".notranslate._0imsa"));
                     var last_element = elements.Last();
 
@@ -308,22 +311,42 @@ namespace Scrape_User_From_Comments
 
             foreach (var user in users)
             {
+                
 
-                UnfollowResult retVal = UserFollower.UnfollowUser(driver, user);
+                FollowStatus retVal = UserFollower.GetFollowStatus(driver, user);
 
                 switch (retVal)
                 {
-                    case UnfollowResult.Unfollowed: // UnFollowed
-                    case UnfollowResult.Unavailable:
+                    case FollowStatus.Following: 
+
+                        UserFollower.UnfollowUser(driver, user);
+
                         MySqlCommand cmd2 = conn.CreateCommand();
-                        cmd2.CommandText = $"UPDATE ScrapedUsers SET Follow_Back = FALSE, Date_Unfollowed=CURRENT_DATE() WHERE ID='{user}'";
+                        cmd2.CommandText = $"UPDATE ScrapedUsers SET  Date_Unfollowed=CURRENT_DATE() WHERE ID='{user}'";
 
 
                         Console.WriteLine($"Retval : {retVal} DBNQ : {cmd2.ExecuteNonQuery()} <- {user} UNFOLLOWED");
 
-                        DoEvents(Random.Shared.Next(5000, 8000));
+                        DoEvents(Random.Shared.Next(50000, 80000));
 
                         break;
+
+                    case FollowStatus.Not_Following:
+
+                        MySqlCommand cmd3 = conn.CreateCommand();
+                        cmd3.CommandText = $"UPDATE ScrapedUsers SET Date_Unfollowed=FROM_UNIXTIME(0) WHERE ID='{user}'";
+
+                        Console.WriteLine($"Retval : {retVal} DBNQ : {cmd3.ExecuteNonQuery()} <- {user} UNFOLLOWED");
+
+
+                        break;
+
+                    case FollowStatus.Pending:
+                        Console.WriteLine($"L'utente {GetUsernameFromURL(user)} non ha ancora accettato la richiesta.");
+                        break;
+
+
+
                 }
 
 
@@ -361,6 +384,8 @@ namespace Scrape_User_From_Comments
 
                 if (Console.KeyAvailable)
                     return;
+
+                Console.WriteLine($"Seguo {user}...");
 
                 FollowResult retVal = UserFollower.FollowUser(driver, user);
 
