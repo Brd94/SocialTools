@@ -110,13 +110,13 @@ namespace Scrape_User_From_Comments
 
 
             PrintConsoleColored("\n\n-> Premere O per aprire tutti i commenti" +
-                $"\n-> Premere A per scraping dai commenti ^(da scaricare {comments.Count})£" +
+                $"\n-> Premere A per scraping dai commenti ^(in memoria : {comments.Count})£" +
                 $"\n-> Premere G per scraping dai followers" +
                 $"\n-> Premere D per dump su DB" +
-                $"\n-> Premere S per seguire gli utenti acquisiti ^(ne restano {tofollow})£ " +
+                $"\n-> Premere S per seguire gli utenti acquisiti ^(da seguire : {tofollow})£ " +
                 $"\n-> Premere L per aggiornare la lista dei follow-back" +
                 $"\n-> Premere R per stampare la lista dei follow-back" +
-                $"\n-> Premere U per non seguire più chi non ha fatto follow-back ^(sono {toUnfollow})£");
+                $"\n-> Premere U per non seguire più chi non ha fatto follow-back ^(da non seguire più : {toUnfollow})£");
 
 
 
@@ -137,7 +137,7 @@ namespace Scrape_User_From_Comments
 
                     case '§':
                         Console.ForegroundColor = ConsoleColor.Red;
-                        continue;                   
+                        continue;
 
 
                     case '£':
@@ -354,7 +354,7 @@ namespace Scrape_User_From_Comments
                 {
                     string user = reader.GetString(0);
                     DateTime date = reader.GetDateTime(2);
-                    Console.WriteLine($"{user.PadRight(50).Substring(20, 30)}   {date.ToString()}");
+                    Console.WriteLine($"{GetUsernameFromURL(user).PadRight(30)}   {date.ToString()}");
                     users.Add(user);
 
                 }
