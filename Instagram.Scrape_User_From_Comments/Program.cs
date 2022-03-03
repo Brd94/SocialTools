@@ -11,11 +11,17 @@ using static UserFollower;
 
 namespace Scrape_User_From_Comments
 {
+    struct Comment
+    {
+        public string User { get; set; }
+        public string Found_ON { get; set; }
+    }
+
     internal class Program
     {
         static ChromeDriver driver;
 
-        static List<string> comments = new List<string>();
+        static List<Comment> comments = new List<Comment>();
         private static string welcomeMessage = @"
 █ █▀▀   █▄▄ █▀█ ▀█▀   █▄▄ █▄█   █▄▄ █▀█ █▀▄ █▀█ █░█
 █ █▄█   █▄█ █▄█ ░█░   █▄█ ░█░   █▄█ █▀▄ █▄▀ ▀▀█ ▀▀█ e BLT94";
@@ -57,8 +63,6 @@ namespace Scrape_User_From_Comments
                 Console.WriteLine("Carico Instagram.....", ConsoleColor.Green);
 
                 driver.Navigate().GoToUrl("https://www.instagram.com/");
-
-
 
 
                 while (true)
@@ -111,7 +115,7 @@ namespace Scrape_User_From_Comments
 
             PrintConsoleColored("\n\n-> Premere O per aprire tutti i commenti" +
                 $"\n-> Premere A per scraping dai commenti ^(in memoria : {comments.Count})£" +
-                $"\n-> Premere G per scraping dai followers" +
+                $"\n-> Premere G per scraping dai followers [MOMENTANEAMENTE DISABILITATO]" +
                 $"\n-> Premere D per dump su DB" +
                 $"\n-> Premere S per seguire gli utenti acquisiti ^(da seguire : {tofollow})£ " +
                 $"\n-> Premere L per aggiornare la lista dei follow-back" +
@@ -169,7 +173,9 @@ namespace Scrape_User_From_Comments
 
                 case ConsoleKey.G:
                     comments.AddRange(UpdateFollowers());
-                    Console.WriteLine("SCRAPING TERMINATO");
+                    Console.WriteLine(" Se dico che è disabilitato, è disabilitato.");
+                    Console.WriteLine("\nPremere un tasto per tornare al menu");
+                    Console.ReadKey();
                     break;
 
                 case ConsoleKey.D:
@@ -274,9 +280,9 @@ namespace Scrape_User_From_Comments
 
 
 
-        private static List<string> UpdateFollowers()
+        private static List<Comment> UpdateFollowers()
         {
-            var list = new List<string>();
+            var list = new List<Comment>();
 
 
             if (driver.FindElements(By.CssSelector("._7UhW9.vy6Bb.MMzan.KV-D4.uL8Hv.T0kll")).Any())
@@ -312,7 +318,7 @@ namespace Scrape_User_From_Comments
                         {
                             string t = element.GetAttribute("href");
 
-                            list.Add(t);
+                            list.Add(new() { User = t });
 
                         }
 
@@ -487,23 +493,23 @@ namespace Scrape_User_From_Comments
             }
         }
 
-        static void Dump_Comments_to_db(IEnumerable<string> comments)
+        static void Dump_Comments_to_db(IEnumerable<Comment> comments)
         {
 
             foreach (var comment in comments)
             {
 
                 MySqlCommand cmd = conn.CreateCommand();
-                cmd.CommandText = $"INSERT INTO ScrapedUsers(ID,Processed_F_U,Date_Followed) VALUES ('{comment}',FALSE,NULL)";
+                cmd.CommandText = $"INSERT INTO ScrapedUsers(ID,Processed_F_U,Date_Followed,Found_ON) VALUES ('{comment.User}',FALSE,NULL,{(comment.Found_ON != null? "'" + comment.Found_ON + "'" : "NULL")})";
 
                 try
                 {
                     cmd.ExecuteNonQuery();
-                    Console.WriteLine($"↓ {comment}");
+                    Console.WriteLine($"↓ {comment.User}");
                 }
                 catch (MySqlException ex)
                 {
-                    Console.WriteLine($"x {comment} - Ragione : {ex.Message}");
+                    Console.WriteLine($"x {comment.User} - Ragione : {ex.Message}");
                 }
 
             }
@@ -511,7 +517,7 @@ namespace Scrape_User_From_Comments
 
         }
 
-        static IEnumerable<string> Scrape_from_current_instagram()
+        static IEnumerable<Comment> Scrape_from_current_instagram()
         {
             if (driver == null)
                 yield break;
@@ -548,8 +554,8 @@ namespace Scrape_User_From_Comments
             {
                 string href = element.GetDomProperty("href");
                 href = href.Replace("?lang=en", "");
-                Console.WriteLine($"+ {href}");
-                yield return href;
+                Console.WriteLine($"+ {href} DA : {prevHead}");
+                yield return new() { User = href, Found_ON = prevHead };
             }
 
 
